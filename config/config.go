@@ -1,9 +1,9 @@
 package config
 
 type Config struct {
-	StoreRepository StoreRepositoryConfig
+	Database DatabaseConfig
 }
 
-type StoreRepositoryConfig struct {
+type DatabaseConfig struct {
 	Address string
 }

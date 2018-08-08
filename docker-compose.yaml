@@ -4,3 +4,5 @@ services:
   database:
     build: "./database"
     container_name: database
+    ports:
+      - "5432:5432"
