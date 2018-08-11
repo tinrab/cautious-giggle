@@ -29,7 +29,7 @@ func (r *ProductRepository) CreateProduct(ctx context.Context, p domain.Product)
 func (r *ProductRepository) ReadProductsWithIDs(ctx context.Context, ids []string) ([]domain.Product, error) {
 	rows, err := r.databaseGateway.Query(
 		ctx,
-		"SELECT id, created_at, name, price FROM products WHERE id = ANY($1::CHAR(27)[])",
+		"SELECT id, created_at, name, price::money::numeric::float8 FROM products WHERE id = ANY($1::CHAR(27)[])",
 		pq.Array(ids),
 	)
 	if err != nil {
