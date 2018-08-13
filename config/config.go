@@ -1,9 +1,14 @@
 package config
 
 type Config struct {
-	Database DatabaseConfig
+	Database PostgresConfig
+	Event    NatsConfig
 }
 
-type DatabaseConfig struct {
+type PostgresConfig struct {
+	Address string
+}
+
+type NatsConfig struct {
 	Address string
 }

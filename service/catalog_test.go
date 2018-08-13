@@ -11,6 +11,8 @@ import (
 	"github.com/tinrab/cautious-giggle/domain"
 	"github.com/stretchr/testify/assert"
 	"fmt"
+	"time"
+	"github.com/tinrab/cautious-giggle/listener"
 )
 
 var (
@@ -20,19 +22,35 @@ var (
 
 func TestMain(m *testing.M) {
 	cfg := config.Config{
-		Database: config.DatabaseConfig{
+		Database: config.PostgresConfig{
 			Address: "postgres://giggle:123456@localhost:/giggle?sslmode=disable",
+		},
+		Event: config.NatsConfig{
+			Address: "nats://localhost:4222",
 		},
 	}
 	dg, err := gateway.NewDatabaseGateway(cfg.Database)
 	if err != nil {
 		log.Fatal(err)
 	}
-	pr := repository.NewProductRepository(dg)
-	ccs = NewCatalogCommandService(pr)
-	cqs = NewCatalogQueryService(pr)
+	eg, err := gateway.NewEventGateway(cfg.Event)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	os.Exit(m.Run())
+	pr := repository.NewProductRepository(dg)
+	ccs = NewCatalogCommandService(eg)
+	cqs = NewCatalogQueryService(pr)
+	_, err = listener.NewCatalogListener(eg, pr)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	code := m.Run()
+
+	dg.Close()
+	eg.Close()
+	os.Exit(code)
 }
 
 func TestInsertAndGetProducts(t *testing.T) {
@@ -46,6 +64,8 @@ func TestInsertAndGetProducts(t *testing.T) {
 		assert.NoError(t, err)
 		ids = append(ids, p.ID)
 	}
+
+	<-time.After(100 * time.Millisecond)
 
 	products, err := cqs.GetProductsWithIDs(ctx, ids)
 	assert.NoError(t, err)

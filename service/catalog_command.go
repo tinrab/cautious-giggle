@@ -2,24 +2,27 @@ package service
 
 import (
 	"github.com/tinrab/cautious-giggle/domain"
-	"github.com/tinrab/cautious-giggle/repository"
 	"context"
+	"github.com/tinrab/cautious-giggle/gateway"
+	"encoding/gob"
+	"bytes"
 )
 
 type CatalogCommandService struct {
-	productRepository *repository.ProductRepository
+	eventGateway *gateway.EventGateway
 }
 
-func NewCatalogCommandService(pr *repository.ProductRepository) *CatalogCommandService {
+func NewCatalogCommandService(eg *gateway.EventGateway) *CatalogCommandService {
 	return &CatalogCommandService{
-		productRepository: pr,
+		eventGateway: eg,
 	}
 }
 
-func (s *CatalogCommandService) InsertProduct(ctx context.Context, p domain.Product) (error) {
-	err := s.productRepository.CreateProduct(ctx, p)
+func (s *CatalogCommandService) InsertProduct(ctx context.Context, p domain.Product) error {
+	b := bytes.Buffer{}
+	err := gob.NewEncoder(&b).Encode(p)
 	if err != nil {
 		return err
 	}
-	return nil
+	return s.eventGateway.Publish("catalog:product:create", b.Bytes())
 }

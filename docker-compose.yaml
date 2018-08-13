@@ -3,6 +3,13 @@ version: "3.6"
 services:
   database:
     build: "./database"
-    container_name: database
+    container_name: "database"
     ports:
       - "5432:5432"
+  events:
+    image: "nats-streaming:0.10.2"
+    container_name: "events"
+    restart: "always"
+    ports:
+      - "4222:4222"
+      - "8222:8222"

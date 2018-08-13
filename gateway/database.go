@@ -11,7 +11,7 @@ type DatabaseGateway struct {
 	db *sql.DB
 }
 
-func NewDatabaseGateway(cfg config.DatabaseConfig) (*DatabaseGateway, error) {
+func NewDatabaseGateway(cfg config.PostgresConfig) (*DatabaseGateway, error) {
 	db, err := sql.Open("postgres", cfg.Address)
 	if err != nil {
 		return nil, err
